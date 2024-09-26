@@ -2,10 +2,12 @@ package com.example.shopping;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
 import com.example.shopping.input.OrderInput;
+import com.example.shopping.repository.OrderRepository;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -37,6 +39,14 @@ public class ShoppingApplication {
                 .setType(EmbeddedDatabaseType.H2).build();
         return dataSource;
     }
+
+    @Bean
+    public JdbcTemplate jdbcTemplate(DataSource dataSource) {
+        return new JdbcTemplate(dataSource);
+    }
+    // public JdbcOrderRepository(JdbcTemplate jdbcTemplate) {
+    //        this.jdbcTemplate = jdbcTemplate;
+    //    }
 
     public static void main(String[] args) {
 
@@ -74,6 +84,10 @@ public class ShoppingApplication {
         Order order = orderService.placeOrder(orderInput, cartInput);
 
         System.out.println("注文確定処理が完了しました。注文ID=" + order.getId());
+
+        OrderRepository orderRepository = context.getBean(OrderRepository.class);
+        Map<String, Object> newOrder = orderRepository.getById(order.getId());
+        System.out.println("注文詳細です=" + newOrder.toString());
     }
 }
 
