@@ -13,8 +13,10 @@ import com.example.training.input.ReservationInput;
 import com.example.training.repository.ReservationRepository;
 import com.example.training.repository.StudentTypeRepository;
 import com.example.training.repository.TrainingRepository;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 public class ReservationServiceImpl implements  ReservationService {
 
 	private final StudentTypeRepository studentTypeRepository;
