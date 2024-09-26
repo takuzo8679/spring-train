@@ -3,8 +3,11 @@ package com.example.shopping;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.example.shopping.repository.*;
+import com.example.shopping.service.OrderServiceImpl;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
@@ -14,10 +17,33 @@ import com.example.shopping.input.CartInput;
 import com.example.shopping.input.CartItemInput;
 import com.example.shopping.input.OrderInput;
 import com.example.shopping.service.OrderService;
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
+
+import javax.sql.DataSource;
 
 @Configuration
 @ComponentScan
 public class ShoppingApplication {
+
+    @Bean
+    public DataSource dataSource() {
+        EmbeddedDatabase dataSource = new EmbeddedDatabaseBuilder()
+                .addScripts("schema.sql", "data.sql")
+                .setType(EmbeddedDatabaseType.H2).build();
+        return dataSource;
+    }
+    @Bean
+    public JdbcOrderItemRepository jdbcOrderItemRepository(DataSource dataSource) { return new JdbcOrderItemRepository(dataSource); }
+    @Bean
+    public JdbcOrderRepository jdbcOrderRepository(DataSource dataSource) { return new JdbcOrderRepository(dataSource); }
+    @Bean
+    public JdbcProductRepository jdbcProductRepository(DataSource dataSource) { return new JdbcProductRepository(dataSource); }
+    @Bean
+    public OrderServiceImpl orderServiceImpl(OrderRepository orderRepository, OrderItemRepository orderItemRepository, ProductRepository productRepository) {
+        return new OrderServiceImpl(orderRepository, orderItemRepository, productRepository);
+    }
 
     public static void main(String[] args) {
         ApplicationContext context = new AnnotationConfigApplicationContext(ShoppingApplication.class);
