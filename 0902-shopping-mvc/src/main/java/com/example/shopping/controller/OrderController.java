@@ -3,11 +3,14 @@ package com.example.shopping.controller;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.example.shopping.exception.StockShortageException;
 import com.example.shopping.input.CartInput;
 import com.example.shopping.input.OrderInput;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -59,22 +62,35 @@ public class OrderController {
 
     @PostMapping("/validate-input")
     public String validateInput(
-        OrderInput orderInput, Model model) {
+//        OrderInput orderInput, Model model) {
+        @Validated OrderInput orderInput,
+        BindingResult bindingResult,
+        Model model) {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute(orderInput);
+            return "order/orderForm";
+        }
         CartInput cartInput = dummyCartInput();
         model.addAttribute("cartInput", cartInput);
         return "order/orderConfirmation";
     }
 
-    @PostMapping(value = "/place-order")
+    @PostMapping(value = "/place-order", params = "correct")
     public String correctInput(@Validated OrderInput orderInput, Model model) {
         return "order/orderForm";
     }
 
+    @PostMapping(value = "/place-order", params = "confirm")
     public String order(@Validated OrderInput orderInput, Model model) {
         CartInput cartInput = dummyCartInput();
         Order order = orderService
             .placeOrder(orderInput, cartInput);
         model.addAttribute("order", order);
         return "order/orderCompletion";
+    }
+
+    @ExceptionHandler(StockShortageException.class)
+    public String displayStockShortagePage() {
+        return "order/stockShortage";
     }
 }
